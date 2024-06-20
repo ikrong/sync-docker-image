@@ -1,4 +1,4 @@
-name: Sync Docker Images
+name: Copy Docker Image
 on: 
   workflow_dispatch:
     inputs:

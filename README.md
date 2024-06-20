@@ -8,6 +8,8 @@ DockerHub域名被封杀，无法直接访问拉取镜像。国内的镜像源�
 
 ## Copy.yml 运行介绍
 
+![Run Copy workflow](assets/copy.jpg)
+
 这个工具主要是将 DockerHub 上某个仓库下的某个标签同步到阿里云镜像仓库。
 
 1. 使用阿里云开通个人实例服务，并获取 [登录用户名和固定密码](https://cr.console.aliyun.com/cn-hangzhou/instance/credentials)
@@ -34,6 +36,8 @@ DockerHub域名被封杀，无法直接访问拉取镜像。国内的镜像源�
 ## Sync.yml 运行介绍
 
 这个工具主要是将 DockerHub 上某个仓库下的所有标签全部同步到阿里云镜像仓库。
+
+![RUN Sync workflow](assets/sync.jpg)
 
 1. 配置密码同上
 

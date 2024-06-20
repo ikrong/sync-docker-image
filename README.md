@@ -63,3 +63,23 @@ DockerHub域名被封杀，无法直接访问拉取镜像。国内的镜像源�
 > destination_scope: ikrong
 > ```
 > 只需要填写需要同步的仓库和目标仓库所在的scope
+
+## 镜像同步之后如何使用
+
+当使用上面办法将镜像同步到阿里云镜像仓库后，就可以直接使用阿里云镜像仓库的镜像了。
+
+以 `nginx:1.13` 为例:
+
+1. 使用命令拉取 
+
+```sh
+docker pull registry.cn-beijing.aliyuncs.com/ikrong/nginx:1.13
+```
+
+2. 在 `Dockerfile` 中使用：
+
+```dockerfile
+FROM registry.cn-beijing.aliyuncs.com/ikrong/nginx:1.13
+
+# 其他内容
+```

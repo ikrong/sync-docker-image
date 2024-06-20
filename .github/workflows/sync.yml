@@ -1,0 +1,33 @@
+name: Sync Docker Images
+on: 
+  workflow_dispatch:
+    inputs:
+      source:
+        description: '镜像源 (Registry)'     
+        required: true
+        default: 'docker.io'
+      destination:
+        description: '目标源 (Registry)'
+        required: true
+        default: 'registry.cn-beijing.aliyuncs.com'
+      source_repo:
+        description: '仓库 (格式 repo)'
+        required: true
+        default: ''
+      destination_scope:
+        description: '目标Scope (格式 scope)'
+        required: true
+        default: ''
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Sync Docker Images
+      uses: ikrong/docker-sync-action@main
+      with:
+        source: ${{ github.event.inputs.source }}
+        source-credential: ${{ secrets.SOURCE_CREDENTIAL }}
+        destination: ${{ github.event.inputs.destination }}
+        destination-credential: ${{ secrets.DESTINATION_CREDENTIAL }}
+        sync: "${{ github.event.inputs.source_repo }} ${{ github.event.inputs.destination_scope }}"

@@ -27,11 +27,16 @@ DockerHub域名被封杀，无法直接访问拉取镜像。国内的镜像源�
 > 如同步 DockerHub 上的 nginx:1.13 到 阿里云镜像仓库 registry.cn-beijing.aliyuncs.com/ikrong/nginx:1.13，则填写如下：
 >
 > ```yaml
+> # 镜像源 (Registry)
 > source: docker.io
+> # 目标源 (Registry)
 > destination: registry.cn-beijing.aliyuncs.com
+> # 仓库及标签 (格式 repo:tag)
 > source_repo: nginx:1.13
+> # 目标仓库及标签 (格式 repo:tag)
 > destination_repo: ikrong/nginx:1.13
 > ```
+> 必须要填写仓库及标签
 
 ## Sync.yml 运行介绍
 
@@ -48,8 +53,13 @@ DockerHub域名被封杀，无法直接访问拉取镜像。国内的镜像源�
 > 如同步 DockerHub 上的 nginx 的所有标签到阿里云镜像仓库 registry.cn-beijing.aliyuncs.com/ikrong/nginx，则填写如下：
 >
 > ```yaml
+> # 镜像源 (Registry)
 > source: docker.io
+> # 目标源 (Registry)
 > destination: registry.cn-beijing.aliyuncs.com
+> # 仓库 (格式 repo)
 > source_repo: nginx
+> # 目标Scope (格式 scope)
 > destination_scope: ikrong
 > ```
+> 只需要填写需要同步的仓库和目标仓库所在的scope

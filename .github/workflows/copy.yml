@@ -20,10 +20,10 @@ on:
         default: ''
 
 jobs:
-  sync:
+  copy:
     runs-on: ubuntu-latest
     steps:
-    - name: Sync Docker Images
+    - name: Copy Docker Images
       uses: ikrong/docker-sync-action@main
       with:
         source: ${{ github.event.inputs.source }}

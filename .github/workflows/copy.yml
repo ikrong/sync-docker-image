@@ -1,5 +1,5 @@
 name: Copy Docker Image
-on: 
+on:
   workflow_dispatch:
     inputs:
       source:
@@ -11,11 +11,11 @@ on:
         required: true
         default: 'registry.cn-beijing.aliyuncs.com'
       source_repo:
-        description: '仓库及标签 (格式 repo:tag)'
+        description: '仓库 (不包含标签，例如 library/ubuntu)'
         required: true
         default: ''
       destination_repo:
-        description: '目标仓库及标签 (格式 repo:tag)'
+        description: '目标仓库 (不包含标签，例如 my-registry/ubuntu)'
         required: true
         default: ''
 
@@ -23,11 +23,24 @@ jobs:
   copy:
     runs-on: ubuntu-latest
     steps:
+    - name: Get Docker Image Tags
+      id: get_tags
+      run: |
+        # 使用curl或其他方法从源注册中心获取所有标签
+        # 请根据你的源注册中心API调整这个命令
+        tags=$(curl -sSL "https://$SOURCE_REGISTRY/v2/$SOURCE_REPO/tags/list" | jq -r '.tags[]')
+        echo "Tags: $tags"
+        echo "::set-output name=tags::$tags"
+
     - name: Copy Docker Images
-      uses: ikrong/docker-sync-action@main
-      with:
-        source: ${{ github.event.inputs.source }}
-        source-credential: ${{ secrets.SOURCE_CREDENTIAL }}
-        destination: ${{ github.event.inputs.destination }}
-        destination-credential: ${{ secrets.DESTINATION_CREDENTIAL }}
-        copy: "${{ github.event.inputs.source_repo }} ${{ github.event.inputs.destination_repo }}"
+      run: |
+        # 遍历所有标签并复制
+        for tag in ${{ steps.get_tags.outputs.tags }}; do
+          echo "Copying tag: $tag"
+          # 使用ikrong/docker-sync-action复制每个标签
+          # 请确保替换以下命令中的$SOURCE_REGISTRY,$SOURCE_REPO, $DESTINATION_REGISTRY,$DESTINATION_REPO, $tag
+          # 并且确保你的Action有足够的权限来执行这些操作
+          docker pull $SOURCE_REGISTRY/$SOURCE_REPO:$tag
+          docker tag $SOURCE_REGISTRY/$SOURCE_REPO:$tag$DESTINATION_REGISTRY/$DESTINATION_REPO:$tag
+          docker push $DESTINATION_REGISTRY/$DESTINATION_REPO:$tag
+        done

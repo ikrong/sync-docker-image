@@ -216,15 +216,15 @@ function get_workflow_runid() {
         -H 'Accept: application/vnd.github+json' \
         -H 'X-GitHub-Api-Version: 2022-11-28' \
         /repos/$REPO/actions/workflows/$WORKFLOW/runs \
-        -f 'per_page=1' -f 'status=in_progress' \
-        --jq '.workflow_runs.[0].id'
+        -f 'per_page=20'\
+        --jq '.workflow_runs | map(select(.conclusion == null)) | .[0].id'
     "
     RUN_ID=$(echo "$get_run_id_cmd" | sh)
     while [ "$RUN_ID" == "" ] && [ $get_run_id_try -lt 6 ]; do
         clear
         echo "Get running id, retring $get_run_id_try/5 times..."
         get_run_id_try=$((get_run_id_try+1))
-        sleep 10
+        sleep 5
         RUN_ID=$(echo "$get_run_id_cmd" | sh)
     done
 }
@@ -237,13 +237,16 @@ function status() {
             -H 'Accept: application/vnd.github+json' \
             -H 'X-GitHub-Api-Version: 2022-11-28' \
             /repos/$REPO/actions/runs/$RUN_ID \
-            --template '{{.status}} {{.run_started_at}}'
+            --template '{{.status}} | {{.conclusion | truncate 20}} | {{.run_started_at}}'
         "
-        result=($(echo $status_cmd | sh))
-        status=${result[0]}
-        time=${result[1]}
-        while [ "$status" == "in_progress" ] || [ "$status" == "" ]; do
+        result=$(echo $status_cmd | sh)
+        echo "$result"
+        status=($(echo "$result" | cut -d '|' -f1))
+        conclusion=($(echo "$result"| cut -d '|' -f2))
+        time=($(echo "$result" | cut -d '|' -f3))
+        while [ "$status" = "in_progress" ] || [ "$status" = "" ] || [ "$conclusion" = "" ]; do
             clear
+            echo "status $status conclusion $conclusion time $time"
             duration=$( [ "$(uname)" = "Linux" ] && echo "$(date -d "$time" "+%s")" || echo "$(date -u -jf "%Y-%m-%dT%H:%M:%SZ" "$time" "+%s")" )
             duration=$(( $(date "+%s") - $duration ))
             if [ $duration -ge 3600 ]; then
@@ -251,17 +254,19 @@ function status() {
             else
                 duration="${duration}s"
             fi
-            echo "Workflow $(g $WORKFLOW) RunID: $(b $RUN_ID) $(g $status) $duration"
+            show_status=$( [ "$conclusion" = "" ] && echo "$status" || echo "$conclusion" )
+            echo "Workflow $(g $WORKFLOW) RunID: $(b $RUN_ID) $(g $show_status) $duration"
             echo "Open https://github.com/$REPO/actions/runs/$RUN_ID to see log"
-            sleep 5
-            result=($(echo $status_cmd | sh))
-            echo ${result[0]}
-            status=${result[0]}
+            sleep 1
+            result=$(echo $status_cmd | sh)
+            echo "$result"
+            status=($(echo "$result" | cut -d '|' -f1))
+            conclusion=($(echo "$result"| cut -d '|' -f2))
         done
         clear
-        echo "Workflow $(g $WORKFLOW) has finished with status: $(g $status)"
+        echo "Workflow $(g $WORKFLOW) has finished with result: $(g $conclusion)"
         if [[ "$CMD" = "trigger" || "$CMD" = "copy" || "$CMD" = "sync" ]]; then
-            format_config $status >> run.log
+            format_config $conclusion >> run.log
         fi
         echo "Open https://github.com/$REPO/actions/runs/$RUN_ID to see log"
     else

@@ -240,13 +240,11 @@ function status() {
             --template '{{.status}} | {{.conclusion | truncate 20}} | {{.run_started_at}}'
         "
         result=$(echo $status_cmd | sh)
-        echo "$result"
         status=($(echo "$result" | cut -d '|' -f1))
         conclusion=($(echo "$result"| cut -d '|' -f2))
         time=($(echo "$result" | cut -d '|' -f3))
         while [ "$status" = "in_progress" ] || [ "$status" = "" ] || [ "$conclusion" = "" ]; do
             clear
-            echo "status $status conclusion $conclusion time $time"
             duration=$( [ "$(uname)" = "Linux" ] && echo "$(date -d "$time" "+%s")" || echo "$(date -u -jf "%Y-%m-%dT%H:%M:%SZ" "$time" "+%s")" )
             duration=$(( $(date "+%s") - $duration ))
             if [ $duration -ge 3600 ]; then
@@ -259,7 +257,6 @@ function status() {
             echo "Open https://github.com/$REPO/actions/runs/$RUN_ID to see log"
             sleep 1
             result=$(echo $status_cmd | sh)
-            echo "$result"
             status=($(echo "$result" | cut -d '|' -f1))
             conclusion=($(echo "$result"| cut -d '|' -f2))
         done

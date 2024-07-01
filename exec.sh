@@ -244,7 +244,8 @@ function status() {
         time=${result[1]}
         while [ "$status" == "in_progress" ] || [ "$status" == "" ]; do
             clear
-            duration=$(( $(date "+%s") - $(date -u -jf "%Y-%m-%dT%H:%M:%SZ" "$time" "+%s") ))
+            duration=$( [ "$(uname)" = "Linux" ] && echo "$(date -d "$time" "+%s")" || echo "$(date -u -jf "%Y-%m-%dT%H:%M:%SZ" "$time" "+%s")" )
+            duration=$(( $(date "+%s") - $duration ))
             if [ $duration -ge 3600 ]; then
                 duration="$((duration/60))min"
             else
@@ -252,14 +253,14 @@ function status() {
             fi
             echo "Workflow $(g $WORKFLOW) RunID: $(b $RUN_ID) $(g $status) $duration"
             echo "Open https://github.com/$REPO/actions/runs/$RUN_ID to see log"
-            sleep 20
+            sleep 5
             result=($(echo $status_cmd | sh))
             echo ${result[0]}
             status=${result[0]}
         done
         clear
         echo "Workflow $(g $WORKFLOW) has finished with status: $(g $status)"
-        if [ "$CMD" = "trigger" ]; then
+        if [[ "$CMD" = "trigger" || "$CMD" = "copy" || "$CMD" = "sync" ]]; then
             format_config $status >> run.log
         fi
         echo "Open https://github.com/$REPO/actions/runs/$RUN_ID to see log"

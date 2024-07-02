@@ -15,6 +15,7 @@ INPUT_CONFIGS=(docker.io registry.cn-beijing.aliyuncs.com)
 INPUT_SHORT=()
 
 RUN_ID=
+RUN_NUMBER=
 
 function usage() {
     echo
@@ -215,15 +216,19 @@ function get_workflow_runid() {
         -H 'X-GitHub-Api-Version: 2022-11-28' \
         /repos/$REPO/actions/workflows/$WORKFLOW/runs \
         -f 'per_page=20'\
-        --jq '.workflow_runs | map(select(.conclusion == null)) | .[0].id'
+        --jq '.workflow_runs | map(select(.conclusion == null)) | .[0] | @text \"\(.id) | \(.run_number)\"' \
     "
-    RUN_ID=$(echo "$get_run_id_cmd" | sh)
+    result=$(echo "$get_run_id_cmd" | sh)
+    RUN_ID=($(echo "$result" | cut -d '|' -f1))
+    RUN_NUMBER=($(echo "$result" | cut -d '|' -f2))
     while [ "$RUN_ID" == "" ] && [ $get_run_id_try -lt 6 ]; do
         clear
         echo "Get running id, retring $get_run_id_try/5 times..."
         get_run_id_try=$((get_run_id_try+1))
         sleep 5
-        RUN_ID=$(echo "$get_run_id_cmd" | sh)
+        result=$(echo "$get_run_id_cmd" | sh)
+        RUN_ID=($(echo "$result" | cut -d '|' -f1))
+        RUN_NUMBER=($(echo "$result" | cut -d '|' -f2))
     done
 }
 
@@ -286,12 +291,12 @@ function download_log() {
         exit 0
     fi
     if [ "$WORKFLOW" = "copy.yml" ]; then
-        logfile="$SCRIPT_DIR/run_logs/$(date +%Y%m%d%H%M%S)-copy-$RUN_ID.log"
+        logfile="$SCRIPT_DIR/run_logs/$(date +%Y%m%d%H%M%S)-copy-$RUN_NUMBER-$RUN_ID.log"
         unzip -p ./$RUN_ID.zip '0_copy.txt' > "$logfile"
         echo "Log file downloaded to $logfile"
     fi
     if [ "$WORKFLOW" = "sync.yml" ]; then
-        logfile="$SCRIPT_DIR/run_logs/$(date +%Y%m%d%H%M%S)-sync-$RUN_ID.log"
+        logfile="$SCRIPT_DIR/run_logs/$(date +%Y%m%d%H%M%S)-sync-$RUN_NUMBER-$RUN_ID.log"
         unzip -p ./$RUN_ID.zip '0_sync.txt' > "$logfile"
         echo "Log file downloaded to $logfile"
     fi

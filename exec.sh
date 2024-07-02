@@ -177,19 +177,14 @@ function trigger() {
         exit 1
     fi
 
-    echo
     if [ "$INPUTS" != "" ]; then
         echo "Triggering workflow $(r $WORKFLOW) on repository $(r $REPO) with branch $(r $BRANCH) and providing the following inputs:"
-        echo
         echo "$(g $(echo "${inputs[@]}" | tr ' ' ',  '))"
     else
         echo "$(r 'Inputs not specified')"
-        usage
         exit 1
     fi
-    echo
     read -p "Confirm? [Y/n] "
-    echo
     if [[ $REPLY =~ ^[Yy]$ ]] || [ -z $REPLY ]; then
         echo "gh api \
             --method POST \
@@ -205,7 +200,6 @@ function trigger() {
             exit 1 
         else
             echo $(g "Workflow Triggered")
-            echo
             echo $(b "Wait to check workflow running status...")
             sleep 15
             status
@@ -258,21 +252,50 @@ function status() {
             fi
             show_status=$( [ "$conclusion" = "" ] && echo "$status" || echo "$conclusion" )
             echo "Workflow $(g $WORKFLOW) RunID: $(b $RUN_ID) $(g $show_status) $duration"
-            echo "Open https://github.com/$REPO/actions/runs/$RUN_ID to see log"
+            echo "Open https://github.com/$REPO/actions/runs/$RUN_ID view more detail"
             sleep 1
             result=$(echo $status_cmd | sh)
             status=($(echo "$result" | cut -d '|' -f1))
             conclusion=($(echo "$result"| cut -d '|' -f2))
         done
         clear
-        echo "Workflow $(g $WORKFLOW) has finished with result: $(g $conclusion)"
+        echo "Workflow $(g $WORKFLOW) has finished with result: $( [ "$conclusion" = "success" ] && echo $(g $conclusion) || echo $(r $conclusion) )"
         if [[ "$CMD" = "trigger" || "$CMD" = "copy" || "$CMD" = "sync" ]]; then
             format_config $conclusion >> run.log
+            download_log
         fi
-        echo "Open https://github.com/$REPO/actions/runs/$RUN_ID to see log"
+        echo "Open https://github.com/$REPO/actions/runs/$RUN_ID view more detail"
     else
         echo "No running workflow"
     fi
+}
+
+function download_log() {
+    if [ "$RUN_ID" = "" ]; then
+       exit 0
+    fi
+    gh api \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        /repos/$REPO/actions/runs/$RUN_ID/logs > ./$RUN_ID.zip
+    mkdir -p ./run_logs/
+    command -v unzip > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        mv ./$RUN_ID.zip ./run_logs/$RUN_ID.zip
+        echo "Log file downloaded to $SCRIPT_DIR/run_logs/$RUN_ID.zip"
+        exit 0
+    fi
+    if [ "$WORKFLOW" = "copy.yml" ]; then
+        logfile="$SCRIPT_DIR/run_logs/$(date +%Y%m%d%H%M%S)-copy-$RUN_ID.log"
+        unzip -p ./$RUN_ID.zip '0_copy.txt' > "$logfile"
+        echo "Log file downloaded to $logfile"
+    fi
+    if [ "$WORKFLOW" = "sync.yml" ]; then
+        logfile="$SCRIPT_DIR/run_logs/$(date +%Y%m%d%H%M%S)-sync-$RUN_ID.log"
+        unzip -p ./$RUN_ID.zip '0_sync.txt' > "$logfile"
+        echo "Log file downloaded to $logfile"
+    fi
+    rm -f ./$RUN_ID.zip
 }
 
 function main() {

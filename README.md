@@ -134,6 +134,34 @@ gh auth login
 ./exec.sh sync nginx ikrong
 ```
 
+8. 为了减少记忆负担，再次简化 copy 和 sync 命令
+
+执行 copy 和 sync 命令时，可以将 registry/scope/repo:tag 写在一起，更符合常见的用法
+
+不过，由于 sync 命令特殊，源仓库的 tag 和目标仓库的 repo:tag 将会被忽略掉
+
+同时，增加 ./copy.sh 和 ./sync.sh 两个脚本，内部调用 ./exec.sh
+
+```shell
+# 想要复制某个镜像标签，可以直接这样执行命令
+./exec.sh copy ghcr.io/nginx:1.13 registry.cn-hangzhou.aliyuncs.com/ikrong/nginx:1.13
+./exec.sh copy nginx:1.13 registry.cn-hangzhou.aliyuncs.com/ikrong/nginx:1.13
+# 想要同步某个仓库，可以直接这样执行命令
+./exec.sh sync ghcr.io/nginx registry.cn-hangzhou.aliyuncs.com/ikrong
+./exec.sh sync ghcr.io/nginx:1.13 registry.cn-hangzhou.aliyuncs.com/ikrong/nginx:1.13 
+# 指定标签和上面不指定标签无任何区别，脚本会忽略掉后面的标签
+
+# 使用 ./copy.sh 和 ./sync.sh 命令
+./copy.sh ghcr.io/nginx:1.13 registry.cn-hangzhou.aliyuncs.com/ikrong/nginx:1.13
+./sync.sh nginx registry.cn-hangzhou.aliyuncs.com/ikrong
+```
+
+9. 当使用copy时，可以指定参数 --pull 就可以在 workflow 执行完毕后，自动拉取镜像
+
+```shell
+./copy.sh nginx:1.14 ikrong/nginx:1.14 --pull
+```
+
 ## 镜像同步之后如何使用
 
 当使用上面办法将镜像同步到阿里云容器镜像仓库后，就可以直接使用阿里云容器镜像仓库的镜像了。

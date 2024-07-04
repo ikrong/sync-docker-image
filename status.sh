@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR=`dirname $0`
+cd $SCRIPT_DIR
+
 function select_option() {
     OLDIFS="$IFS"
     IFS="|"
@@ -14,9 +17,9 @@ function select_option() {
         local i=0
         for option in "${options[@]}"; do
             if [ $i -eq $selected ]; then
-                echo -e "\033[32m● $option\033[0m"
+                echo -e "\033[32m●  $option\033[0m"
             else
-                echo -e "○ $option"
+                echo -e "○  $option"
             fi
             i=$((i + 1))
         done

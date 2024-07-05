@@ -417,7 +417,7 @@ function status() {
             if [ $duration -ge 120 ]; then
                 local m=$((duration/60))
                 local s=$((duration%60))
-                if [ $s -eq 0]; then
+                if [ $s -eq 0 ]; then
                     duration="${m}min"
                 else
                     duration="${m}min${s}s"

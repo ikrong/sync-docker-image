@@ -9,6 +9,7 @@ WORKFLOW=
 BRANCH="main"
 INPUTS=
 PULL=
+CONFIRM=
 
 # 你可以在这里修改执行的默认值，请保证顺序一致
 INPUT_CONFIGS=(docker.io registry.cn-beijing.aliyuncs.com)
@@ -327,7 +328,12 @@ function trigger() {
             echo "$(g ${inputs[$i]})"
         }
     fi
-    read -p "Confirm? [Y/n] "
+    local REPLY
+    if [ "$CONFIRM" = "true" ]; then
+        REPLY="y"
+    else
+        read -p "Confirm? [Y/n] "
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]] || [ -z $REPLY ]; then
         echo "gh api \
             --method POST \
@@ -530,6 +536,9 @@ while [ $# -gt 0 ]; do
             ;;
         --pull)
             PULL="true"
+            ;;
+        -y | --y | --yes)
+            CONFIRM="true"
             ;;
         trigger)
             CMD="trigger"

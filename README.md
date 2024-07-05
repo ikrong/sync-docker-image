@@ -162,6 +162,13 @@ gh auth login
 ./copy.sh nginx:1.14 ikrong/nginx:1.14 --pull
 ```
 
+10. 脚本默认会有确认提示，使用参数 -y 可以跳过确认执行
+
+```shell
+./copy.sh nginx:1.14 ikrong/nginx:1.14 -y
+./sync.sh nginx ikrong -y
+```
+
 ## 镜像同步之后如何使用
 
 当使用上面办法将镜像同步到阿里云容器镜像仓库后，就可以直接使用阿里云容器镜像仓库的镜像了。

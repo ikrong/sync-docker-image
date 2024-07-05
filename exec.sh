@@ -414,8 +414,14 @@ function status() {
             clear
             duration=$( [ "$(uname)" = "Linux" ] && echo "$(date -d "$time" "+%s")" || echo "$(date -u -jf "%Y-%m-%dT%H:%M:%SZ" "$time" "+%s")" )
             duration=$(( $(date "+%s") - $duration ))
-            if [ $duration -ge 3600 ]; then
-                duration="$((duration/60))min"
+            if [ $duration -ge 120 ]; then
+                local m=$((duration/60))
+                local s=$((duration%60))
+                if [ $s -eq 0]; then
+                    duration="${m}min"
+                else
+                    duration="${m}min${s}s"
+                fi
             else
                 duration="${duration}s"
             fi

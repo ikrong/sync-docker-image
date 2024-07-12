@@ -1,4 +1,5 @@
 name: Sync Docker Images
+run-name: Sync ${{ inputs.source_repo }} to ${{ inputs.destination_scope }}
 on: 
   workflow_dispatch:
     inputs:

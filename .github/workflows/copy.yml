@@ -1,4 +1,5 @@
 name: Copy Docker Image
+run-name: Copy ${{ inputs.source_repo }} to ${{ inputs.destination_repo }}
 on: 
   workflow_dispatch:
     inputs:

@@ -167,7 +167,7 @@ function check_repo() {
         repoSeg[3]=${seg[1]}
         remain=${seg[0]}
     fi
-    if [[ "$remain" = *.* ]]; then
+    if [[ "$remain" = *.*/* ]]; then
         IFS="/"
         seg=($remain)
         repoSeg[0]=${seg[0]}

@@ -12,7 +12,7 @@ PULL=
 CONFIRM=
 
 # 你可以在这里修改执行的默认值，请保证顺序一致
-INPUT_CONFIGS=(docker.io registry.cn-beijing.aliyuncs.com)
+INPUT_CONFIGS=(hub.docker.com crpi-0fqjqj7sl624n062-vpc.cn-shenzhen.personal.cr.aliyuncs.com)
 
 INPUT_SHORT=()
 
